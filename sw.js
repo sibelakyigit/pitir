@@ -1,5 +1,5 @@
 // Ağ önce: internet varken yeni üniteler hemen gelir, yokken önbellekten çalışır.
-const C = 'pitir-20261109190235';
+const C = 'pitir-20261109191244';
 const FILES = ['./', 'index.html', 'words.js', 'manifest.webmanifest', 'icon.svg', 'icon-180.png', 'icon-192.png', 'icon-512.png'];
 self.addEventListener('install', e => { e.waitUntil(caches.open(C).then(c => c.addAll(FILES))); self.skipWaiting(); });
 self.addEventListener('activate', e => {

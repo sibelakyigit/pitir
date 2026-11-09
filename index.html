@@ -129,6 +129,20 @@ input.w:focus{outline:none;border-color:var(--purple)}
 @keyframes droop{40%{transform:translateY(6px) rotate(-6deg)}}
 @keyframes blink{0%,92%,100%{transform:scaleY(1)}96%{transform:scaleY(.1)}}
 @keyframes glow{to{fill:#fff3a0}}
+.closetbtn{display:flex;align-items:center;gap:12px;width:100%;text-align:left;margin-top:12px;border-radius:22px;padding:14px 16px;color:var(--ink);background:linear-gradient(135deg,#ffd6ec,#ffe9a8);box-shadow:0 6px 0 #0004}
+.closetbtn .e{font-size:44px}.closetbtn b{font-size:21px;display:block}.closetbtn small{font-size:15px;color:#6b4a5a}
+.closet{display:flex;align-items:center;gap:14px;margin:14px 0}
+.closet .stage{width:190px;flex:none;background:radial-gradient(circle,#ffffff22,transparent 70%);border-radius:50%;padding:8px}
+.tabs{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0 14px}
+.items{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px}
+.item{background:#fff;color:var(--ink);border-radius:20px;padding:10px 8px 12px;box-shadow:0 5px 0 #0005;border:3px solid transparent;display:flex;flex-direction:column;align-items:center;gap:4px}
+.item .pitir{width:96px}.item b{font-size:16px;line-height:1.15}
+.item .tag{background:#fff3c4;border-radius:99px;padding:2px 12px;font-weight:800;font-size:15px}
+.item .tag.own{background:#e0e7ff}
+.item.worn{border-color:var(--green)}.item.worn .tag{background:#dcfce7;color:#15803d}
+.item.try{border-color:var(--yellow)}
+.item.lock{opacity:.55}
+@media (max-width:520px){.closet{flex-direction:column}.closet .stage{width:150px}}
 .confetti{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:50}
 .confetti i{position:absolute;top:-20px;width:10px;height:16px;border-radius:3px;animation:fall linear forwards}
 @keyframes fall{to{transform:translateY(110vh) rotate(720deg)}}
@@ -151,7 +165,7 @@ const dayStr = d => d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate
 
 /* ---------- kayıt ---------- */
 const KEY = 'pitir-v1';
-function fresh() { return { stars: 0, streak: 0, lastDay: '', words: {}, badges: [], games: 0, bestCombo: 0, mute: false, perfect: 0 }; }
+function fresh() { return { stars: 0, streak: 0, lastDay: '', words: {}, badges: [], games: 0, bestCombo: 0, mute: false, perfect: 0, spent: 0, owned: ['mavi'], wear: {} }; }
 let S;
 try { S = Object.assign(fresh(), JSON.parse(localStorage.getItem(KEY) || '{}')); } catch (e) { S = fresh(); }
 function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} }
@@ -199,7 +213,11 @@ const BADGES = [
   { id: 'kusur', e: '💎', n: 'Kusursuz', t: 'Bir oyunu hatasız bitir', c: () => S.perfect >= 1 },
   { id: 'kat', e: '🏅', n: 'Bölüm Bitti', t: 'Bir bölümün tüm kelimelerini öğren', c: () => UNITS.some(u => u.cats.some((c, ci) => unitWords(u.id, [ci]).every(w => box(w) >= MASTER))) },
   { id: 'usta', e: '🪐', n: 'Gezegen Ustası', t: 'Bir ünitenin tüm kelimelerini öğren', c: () => UNITS.some(u => unitWords(u.id).every(w => box(w) >= MASTER)) },
+  { id: 'alis', e: '🛍️', n: 'İlk Alışveriş', t: 'Pıtır\'a ilk eşyasını al', c: () => S.owned.length >= 2 },
+  { id: 'moda', e: '👑', n: 'Moda İkonu', t: 'Dolapta 8 eşya topla', c: () => S.owned.length >= 9 },
 ];
+function newBadges() { const f = BADGES.filter(b => !S.badges.includes(b.id) && b.c()); f.forEach(b => S.badges.push(b.id)); return f; }
+const wallet = () => S.stars - S.spent;
 
 /* ---------- ses ---------- */
 let AC;
@@ -251,23 +269,104 @@ function floatStar(el, txt) {
 }
 
 /* ---------- Pıtır ---------- */
-function pitir(mood) {
+/* ---------- Pıtır'ın dolabı: eşyalar ---------- */
+const STAR = (cx, cy, r) => { let p = ''; for (let i = 0; i < 10; i++) { const a = Math.PI / 5 * i - Math.PI / 2, rr = i % 2 ? r * .45 : r; p += (i ? 'L' : 'M') + (cx + rr * Math.cos(a)).toFixed(1) + ' ' + (cy + rr * Math.sin(a)).toFixed(1); } return p + 'Z'; };
+const HEART = (cx, cy, s) => `M${cx} ${cy + s * .9} C${cx - s * 1.7} ${cy - s * .1} ${cx - s * .8} ${cy - s * 1.3} ${cx} ${cy - s * .45} C${cx + s * .8} ${cy - s * 1.3} ${cx + s * 1.7} ${cy - s * .1} ${cx} ${cy + s * .9}Z`;
+const SLOTS = [['hat', '🎩', 'Şapkalar'], ['eyes', '🕶️', 'Gözlükler'], ['neck', '🎀', 'Aksesuar'], ['color', '🎨', 'Renkler']];
+const ITEMS = [
+  { id: 'parti', slot: 'hat', n: 'Parti Şapkası', p: 20, hide: 1, svg: `<path d="M42 42 L60 4 L78 42 Z" fill="#ff6b8b"/><path d="M47 32 H73 M52 21 H68" stroke="#ffd23f" stroke-width="4"/><circle cx="60" cy="5" r="5.5" fill="#ffd23f"/>` },
+  { id: 'bere', slot: 'hat', n: 'Ponponlu Bere', p: 30, hide: 1, svg: `<path d="M33 46 Q35 12 60 12 Q85 12 87 46 Z" fill="#8b5cf6"/><path d="M45 18 V44 M60 12 V44 M75 18 V44" stroke="#a78bfa" stroke-width="4"/><rect x="31" y="39" width="58" height="11" rx="5.5" fill="#ffd23f"/><circle cx="60" cy="10" r="8" fill="#fff"/>` },
+  { id: 'silindir', slot: 'hat', n: 'Sihirbaz Şapkası', p: 40, hide: 1, svg: `<rect x="31" y="34" width="58" height="7" rx="3.5" fill="#2a2140"/><rect x="42" y="4" width="36" height="32" rx="3" fill="#2a2140"/><rect x="42" y="25" width="36" height="6" fill="#ff6b8b"/><path d="${STAR(70, 13, 4)}" fill="#ffd23f"/>` },
+  { id: 'cicek', slot: 'hat', n: 'Çiçek Tacı', p: 50, svg: `<path d="M34 42 Q60 28 86 42" stroke="#22c55e" stroke-width="4" fill="none"/>` + [38, 49, 60, 71, 82].map((x, i) => { const y = [41, 35, 32, 35, 41][i]; return `<circle cx="${x}" cy="${y}" r="6.5" fill="${['#ff8fb8', '#ffd23f', '#ff6b8b', '#a78bfa', '#7dd3fc'][i]}"/><circle cx="${x}" cy="${y}" r="2.4" fill="#fff8d6"/>`; }).join('') },
+  { id: 'tac', slot: 'hat', n: 'Kraliyet Tacı', p: 80, lvl: 3, hide: 1, svg: `<path d="M37 41 L37 16 L48 29 L60 10 L72 29 L83 16 L83 41 Z" fill="#ffd23f" stroke="#e0a800" stroke-width="2" stroke-linejoin="round"/><circle cx="60" cy="31" r="4.5" fill="#ff4f8b"/><circle cx="46" cy="35" r="3" fill="#38bdf8"/><circle cx="74" cy="35" r="3" fill="#38bdf8"/>` },
+  { id: 'kask', slot: 'hat', n: 'Astronot Kaskı', p: 150, lvl: 4, hide: 1, svg: `<circle cx="60" cy="74" r="57" fill="#bfe3ff" fill-opacity=".22" stroke="#e8f4ff" stroke-width="5"/><path d="M26 46 Q38 26 58 21" stroke="#fff" stroke-width="5" stroke-linecap="round" fill="none" opacity=".85"/><rect x="52" y="10" width="16" height="9" rx="3" fill="#e8f4ff"/><circle cx="60" cy="8" r="4" fill="#ff4f6d"/>` },
+  { id: 'yuvarlak', slot: 'eyes', n: 'Kitap Kurdu Gözlüğü', p: 25, svg: `<g fill="#fff" fill-opacity=".15" stroke="#2a2140" stroke-width="3.5"><circle cx="42" cy="68" r="16"/><circle cx="78" cy="68" r="16"/></g><path d="M58 66 Q60 61 62 66 M26 64 L18 60 M94 64 L102 60" stroke="#2a2140" stroke-width="3.5" fill="none" stroke-linecap="round"/>` },
+  { id: 'yildizgoz', slot: 'eyes', n: 'Yıldız Gözlük', p: 45, svg: `<path d="${STAR(42, 69, 19)} ${STAR(78, 69, 19)}" fill="#ffd23f" stroke="#e0a800" stroke-width="2.5" stroke-linejoin="round"/><path d="${STAR(42, 69, 12)} ${STAR(78, 69, 12)}" fill="#2a2140" opacity=".85"/><path d="M58 66 H62" stroke="#e0a800" stroke-width="4"/>` },
+  { id: 'kalpgoz', slot: 'eyes', n: 'Kalp Gözlük', p: 45, svg: `<path d="${HEART(42, 68, 12)} ${HEART(78, 68, 12)}" fill="#ff4f8b" fill-opacity=".85" stroke="#d6306b" stroke-width="2.5"/><path d="M56 65 Q60 61 64 65" stroke="#d6306b" stroke-width="3.5" fill="none"/>` },
+  { id: 'kayak', slot: 'eyes', n: 'Süper Kahraman Maskesi', p: 60, svg: `<path d="M20 62 Q40 50 60 62 Q80 50 100 62 L98 78 Q80 86 60 74 Q40 86 22 78 Z" fill="#ef4444"/><circle cx="42" cy="68" r="10" fill="#fff"/><circle cx="78" cy="68" r="10" fill="#fff"/><circle cx="44" cy="70" r="6" fill="#1b1440"/><circle cx="80" cy="70" r="6" fill="#1b1440"/>` },
+  { id: 'papyon', slot: 'neck', n: 'Papyon', p: 15, svg: `<path d="M60 112 L45 103 L45 121 Z M60 112 L75 103 L75 121 Z" fill="#ff4f6d" stroke="#d6304f" stroke-width="2" stroke-linejoin="round"/><circle cx="60" cy="112" r="4.5" fill="#d6304f"/>` },
+  { id: 'atki', slot: 'neck', n: 'Kış Atkısı', p: 30, svg: `<path d="M20 100 Q60 122 100 100 L100 111 Q60 133 20 111 Z" fill="#22c55e"/><path d="M36 106 L36 118 M52 110 L52 122 M68 110 L68 122 M84 106 L84 118" stroke="#fff" stroke-width="3" opacity=".7"/><rect x="76" y="108" width="12" height="24" rx="3" fill="#22c55e"/>` },
+  { id: 'madalya', slot: 'neck', n: 'Altın Madalya', p: 55, svg: `<path d="M44 98 L60 114 L76 98" stroke="#4f8cff" stroke-width="6" fill="none"/><path d="M44 98 L60 114 L76 98" stroke="#ff4f6d" stroke-width="2" fill="none"/><circle cx="60" cy="117" r="9" fill="#ffd23f" stroke="#e0a800" stroke-width="2"/><path d="${STAR(60, 117, 5)}" fill="#e0a800"/>` },
+  { id: 'pelerin', slot: 'neck', n: 'Kahraman Pelerini', p: 90, lvl: 3, back: 1, svg: `<path d="M24 60 Q60 50 96 60 L116 130 Q60 118 4 130 Z" fill="#ef4444"/><path d="M24 60 Q60 50 96 60" stroke="#b91c1c" stroke-width="4" fill="none"/>` },
+  { id: 'mavi', slot: 'color', n: 'Uzay Mavisi', p: 0, pal: ['#4f8cff', '#9cc0ff', '#2f5fd0'] },
+  { id: 'pembe', slot: 'color', n: 'Şeker Pembe', p: 40, pal: ['#ff7eb6', '#ffc6de', '#e0508f'] },
+  { id: 'mor', slot: 'color', n: 'Galaksi Moru', p: 40, pal: ['#9b6bff', '#d2bfff', '#6d3fe0'] },
+  { id: 'yesil', slot: 'color', n: 'Nane Yeşili', p: 40, pal: ['#34cf8c', '#aaf0d0', '#1f9e66'] },
+  { id: 'turuncu', slot: 'color', n: 'Gün Batımı', p: 40, pal: ['#ff9f43', '#ffd6a8', '#e07a1a'] },
+  { id: 'altin', slot: 'color', n: 'Altın Pıtır', p: 200, lvl: 5, pal: ['#f5c518', '#fff1a8', '#c99a00'] },
+];
+const item = id => ITEMS.find(i => i.id === id);
+
+function pitir(mood, wear) {
+  wear = wear || S.wear || {};
+  const [m, l, d] = (item(wear.color || 'mavi') || ITEMS.find(i => i.id === 'mavi')).pal;
+  const hat = item(wear.hat), eyes = item(wear.eyes), neck = item(wear.neck);
   return `<svg class="pitir ${mood || ''}" viewBox="0 0 120 135" aria-hidden="true"><g class="bod">
-  <path d="M60 36 Q56 22 62 10" stroke="#3a6ee8" stroke-width="5" fill="none" stroke-linecap="round"/>
-  <path class="ant" d="M62 0 l3.5 7 7.5 1 -5.5 5 1.5 7.5 -7 -3.6 -7 3.6 1.5 -7.5 -5.5 -5 7.5 -1z" fill="#ffd23f"/>
-  <path d="M16 74 Q2 66 6 50" stroke="#4f8cff" stroke-width="10" fill="none" stroke-linecap="round"/>
-  <path d="M104 74 Q118 66 114 50" stroke="#4f8cff" stroke-width="10" fill="none" stroke-linecap="round"/>
-  <ellipse cx="40" cy="122" rx="14" ry="7" fill="#2f5fd0"/><ellipse cx="80" cy="122" rx="14" ry="7" fill="#2f5fd0"/>
-  <ellipse cx="60" cy="78" rx="48" ry="44" fill="#4f8cff"/>
-  <ellipse cx="60" cy="94" rx="28" ry="21" fill="#9cc0ff"/>
-  <circle cx="22" cy="58" r="4" fill="#7aa8ff"/><circle cx="96" cy="50" r="3" fill="#7aa8ff"/><circle cx="88" cy="40" r="2" fill="#7aa8ff"/>
+  ${neck && neck.back ? neck.svg : ''}
+  ${hat && hat.hide ? '' : `<path d="M60 36 Q56 22 62 10" stroke="${d}" stroke-width="5" fill="none" stroke-linecap="round"/>
+  <path class="ant" d="M62 0 l3.5 7 7.5 1 -5.5 5 1.5 7.5 -7 -3.6 -7 3.6 1.5 -7.5 -5.5 -5 7.5 -1z" fill="#ffd23f"/>`}
+  <path d="M16 74 Q2 66 6 50" stroke="${m}" stroke-width="10" fill="none" stroke-linecap="round"/>
+  <path d="M104 74 Q118 66 114 50" stroke="${m}" stroke-width="10" fill="none" stroke-linecap="round"/>
+  <ellipse cx="40" cy="122" rx="14" ry="7" fill="${d}"/><ellipse cx="80" cy="122" rx="14" ry="7" fill="${d}"/>
+  <ellipse cx="60" cy="78" rx="48" ry="44" fill="${m}"/>
+  <ellipse cx="60" cy="94" rx="28" ry="21" fill="${l}"/>
+  <circle cx="22" cy="58" r="4" fill="${l}"/><circle cx="96" cy="50" r="3" fill="${l}"/><circle cx="88" cy="40" r="2" fill="${l}"/>
   <circle cx="42" cy="68" r="14" fill="#fff"/><circle cx="78" cy="68" r="14" fill="#fff"/>
   <circle class="eye" cx="44" cy="70" r="8" fill="#1b1440"/><circle class="eye" cx="80" cy="70" r="8" fill="#1b1440"/>
   <circle cx="47" cy="66" r="3" fill="#fff"/><circle cx="83" cy="66" r="3" fill="#fff"/>
   <ellipse cx="28" cy="86" rx="7" ry="4" fill="#ff8fb8"/><ellipse cx="92" cy="86" rx="7" ry="4" fill="#ff8fb8"/>
   <path class="m-happy" d="M49 88 Q60 101 71 88 Z" fill="#ff6b8b" stroke="#1b1440" stroke-width="3.5" stroke-linejoin="round"/>
   <path class="m-sad" d="M51 96 Q60 88 69 96" stroke="#1b1440" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+  ${neck && !neck.back ? neck.svg : ''}${eyes ? eyes.svg : ''}${hat ? hat.svg : ''}
   </g></svg>`;
+}
+
+/* ---------- dolap ekranı ---------- */
+let TAB = 'hat', TRY = null, SHOPMSG = '';
+function shop() {
+  G = null;
+  const L = level(), w = Object.assign({}, S.wear);
+  if (TRY) w[TRY.slot] = TRY.id;
+  let msg = SHOPMSG || 'Beni süsle! Bir eşyaya dokun, üstümde nasıl durduğuna bak 😊';
+  let act = '';
+  if (TRY) {
+    const need = TRY.p - wallet();
+    msg = need > 0 ? `${esc(TRY.n)} çok güzel! ${need} yıldız daha toplarsan alabilirsin. Hadi oyuna! 🚀` : `${esc(TRY.n)} bana yakıştı mı? ⭐ ${TRY.p} yıldız.`;
+    act = `<div class="row" style="margin-top:8px"><button class="ghost" onclick="TRY=null;SHOPMSG='';shop()">Vazgeç</button>${need > 0 ? '' : `<button class="go" onclick="buy('${TRY.id}')">Satın al ⭐ ${TRY.p}</button>`}</div>`;
+  }
+  app.innerHTML = `
+  <div class="top"><button class="iconbtn" onclick="TRY=null;SHOPMSG='';home()">←</button><span class="spacer"></span><span class="chip">⭐ ${wallet()} harcanabilir</span></div>
+  <h1>👕 Pıtır'ın Dolabı</h1>
+  <div class="closet"><div class="stage">${pitir(TRY ? 'happy' : '', w)}</div><div style="flex:1"><div class="bubble">${msg}</div>${act}</div></div>
+  <div class="tabs">${SLOTS.map(([s, e, n]) => `<button class="cat ${TAB === s ? 'on' : ''}" onclick="TAB='${s}';shop()">${e} ${n}</button>`).join('')}</div>
+  <div class="items">${ITEMS.filter(i => i.slot === TAB).map(i => {
+    const own = S.owned.includes(i.id), worn = (S.wear[i.slot] || (i.slot === 'color' ? 'mavi' : '')) === i.id, lock = !own && i.lvl && L.n < i.lvl;
+    const pw = Object.assign({}, S.wear, { [i.slot]: i.id });
+    const tag = worn ? '✓ Üstünde' : own ? 'Giy' : lock ? `🔒 Seviye ${i.lvl}` : `⭐ ${i.p}`;
+    return `<button class="item ${worn ? 'worn' : ''} ${lock ? 'lock' : ''} ${TRY && TRY.id === i.id ? 'try' : ''}" onclick="tapItem('${i.id}')">${pitir('', pw)}<b>${esc(i.n)}</b><span class="tag ${own ? 'own' : ''}">${tag}</span></button>`;
+  }).join('')}</div>`;
+}
+function tapItem(id) {
+  const i = item(id), L = level();
+  SHOPMSG = '';
+  if (S.owned.includes(id)) {
+    TRY = null;
+    if (S.wear[i.slot] === id && i.slot !== 'color') { delete S.wear[i.slot]; SHOPMSG = 'Tamam, çıkardım! Başka bir şey deneyelim mi?'; }
+    else { S.wear[i.slot] = id; SHOPMSG = rnd(['Çok yakıştı, değil mi? 😍', 'Bayıldım! Teşekkür ederim 💙', 'Şimdi uzayın en havalısı benim! ✨']); beep(true); }
+    save();
+  } else if (i.lvl && L.n < i.lvl) {
+    TRY = null; SHOPMSG = `Bu özel eşya Seviye ${i.lvl}'de açılıyor! Şu an Seviye ${L.n}'sin, oynamaya devam 🚀`;
+  } else TRY = i;
+  shop();
+}
+function buy(id) {
+  const i = item(id);
+  if (!i || S.owned.includes(id) || wallet() < i.p) return;
+  S.spent += i.p; S.owned.push(id); S.wear[i.slot] = id; TRY = null;
+  const nb = newBadges(); save();
+  SHOPMSG = `Yaşasın! ${esc(i.n)} artık benim! Teşekkür ederim 🥰` + nb.map(b => `<br>Yeni rozet: ${b.e} ${b.n}`).join('');
+  confetti(110); beep(true);
+  shop();
 }
 const CHEER = ['Süpersin! 🎉', 'Harikasın!', 'Yıldız gibi parladın! ⭐', 'Pıtır çok mutlu! 💙', 'Aynen böyle devam!', 'Vay canına, çok iyi!', 'Beynin roket gibi! 🚀'];
 const COMFORT = ['Olsun, birlikte öğreniyoruz 💙', 'Bir dahakine kesin bilirsin!', 'Pıtır sana inanıyor!', 'Hata yapmak öğrenmenin parçası 🌱', 'Bu kelimeyi tekrar soracağım, hazır ol 😉'];
@@ -286,11 +385,12 @@ function home() {
   const hi = S.games === 0 ? 'Merhaba! Ben Pıtır 👋 Uzaydan İngilizce öğrenmeye geldim. Birlikte kelime avına çıkalım mı?'
     : rnd(['Tekrar hoş geldin! Bugün hangi gezegene uçuyoruz? 🚀', 'Seni özledim! Hadi yıldız toplayalım ⭐', 'Bugün de kelime avına hazır mısın? 💙']);
   app.innerHTML = `
-  <div class="top"><span class="chip">⭐ ${S.stars}</span><span class="chip">🔥 ${S.streak} gün</span><span class="spacer"></span>
+  <div class="top"><span class="chip">⭐ ${wallet()}</span><span class="chip">🔥 ${S.streak} gün</span><span class="spacer"></span>
    <button class="iconbtn" onclick="S.mute=!S.mute;save();home()">${S.mute ? '🔇' : '🔊'}</button></div>
   <div class="hero">${pitir('')}<div class="bubble">${hi}</div></div>
   <div class="lvl"><div class="row1"><span>Seviye ${L.n} · ${L.name}</span><span>${L.need ? L.need + ' ⭐ kaldı' : 'En üst seviye!'}</span></div>
    <div class="bar" style="margin-top:6px"><i style="width:${L.pct}%"></i></div></div>
+  <button class="closetbtn" onclick="shop()"><span class="e">👕</span><span style="flex:1"><b>Pıtır'ın Dolabı</b><small>Yıldızlarınla şapka, gözlük, renk al!</small></span><span class="chip" style="background:#fff;color:var(--ink)">⭐ ${wallet()}</span></button>
   <h2>🪐 Gezegenler</h2>
   ${UNITS.map(u => { const ws = unitWords(u.id), m = ws.filter(w => box(w) >= MASTER).length;
     return `<button class="planet" style="--c:${u.color}" onclick="unitView('${u.id}')"><span class="p-ico">${u.planet}</span>
@@ -305,7 +405,7 @@ function unitView(uid) {
   G = null; if (CUR.uid !== uid) CUR = { uid, cats: [] };
   const u = UNITS.find(x => x.id === uid), ws = unitWords(uid, CUR.cats), m = ws.filter(w => box(w) >= MASTER).length;
   app.innerHTML = `
-  <div class="top"><button class="iconbtn" onclick="home()">←</button><span class="spacer"></span><span class="chip">⭐ ${S.stars}</span></div>
+  <div class="top"><button class="iconbtn" onclick="home()">←</button><span class="spacer"></span><span class="chip">⭐ ${wallet()}</span></div>
   <h1>${u.planet} ${esc(u.title)}</h1>
   <div class="lvl"><div class="row1"><span>Öğrenilen</span><span>${m} / ${ws.length}</span></div><div class="bar" style="margin-top:6px"><i style="width:${m / ws.length * 100}%"></i></div></div>
   <h2>Hangi bölüm?</h2>
@@ -507,9 +607,10 @@ function finish(early) {
   if (S.lastDay !== dayStr(t)) { S.streak = S.lastDay === dayStr(y) ? S.streak + 1 : 1; S.lastDay = dayStr(t); }
   const perfect = !early && g.wrong === 0 && g.right >= 6;
   if (perfect) S.perfect++;
-  const fresh = BADGES.filter(b => !S.badges.includes(b.id) && b.c());
-  fresh.forEach(b => S.badges.push(b.id));
+  const fresh = newBadges();
   save();
+  const L = level(), can = ITEMS.filter(i => !S.owned.includes(i.id) && !(i.lvl && L.n < i.lvl) && i.p <= wallet()).sort((a, b) => b.p - a.p)[0];
+  const tip = can ? `<div class="newbadge" style="cursor:pointer" onclick="TAB='${can.slot}';TRY=item('${can.id}');shop()"><div style="width:90px;margin:0 auto">${pitir('', Object.assign({}, S.wear, { [can.slot]: can.id }))}</div>Artık <b>${esc(can.n)}</b> alabilirsin! 👕 Dolaba git</div>` : '';
   const total = g.right + g.wrong, rate = total ? g.right / total : 0;
   const msg = perfect ? 'KUSURSUZ! Hiç hata yapmadın, Pıtır havalara uçtu! 💎' : rate >= .8 ? 'Muhteşem bir görevdi! Seninle gurur duyuyorum 🌟'
     : rate >= .5 ? 'Çok iyi gidiyorsun! Biraz daha tekrar, sonra usta olacaksın 💪' : 'Her oyunda biraz daha öğreniyorsun. Hadi bir tur daha! 💙';
@@ -518,6 +619,8 @@ function finish(early) {
    <div class="bigstar">⭐ +${g.earned}</div>
    <div style="font-size:20px;opacity:.9">${g.right} doğru · ${g.wrong} yanlış</div>
    ${fresh.map(b => `<div class="newbadge">Yeni rozet kazandın!<span class="e">${b.e}</span>${b.n}</div>`).join('')}
+   ${tip}
+   <div style="font-size:18px;opacity:.85;margin-top:6px">Harcanabilir yıldızın: ⭐ ${wallet()}</div>
    <div class="row"><button class="ghost" onclick="unitView(CUR.uid)">Başka oyun</button><button class="go" onclick="start('${g.mode}')">Bir tur daha 🚀</button></div>
    <div class="row"><button class="ghost" onclick="home()">🏠 Ana sayfa</button></div></div>`;
   if (!early) { confetti(perfect || fresh.length ? 140 : 80); beep(true); }
