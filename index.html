@@ -1,0 +1,531 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Pıtır">
+<meta name="theme-color" content="#1b1440">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" href="icon.svg">
+<title>Pıtır ile Kelime Avı</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#1b1440;--card:#fff;--ink:#1b1440;--muted:#6b6790;--blue:#4f8cff;--purple:#8b5cf6;--pink:#ff6b8b;--yellow:#ffd23f;--green:#22c55e;--red:#ef4444}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;min-height:100%}
+body{font-family:'Baloo 2',system-ui,-apple-system,sans-serif;color:#fff;background:var(--bg);
+ background-image:radial-gradient(2px 2px at 20% 30%,#fff8,transparent),radial-gradient(1.5px 1.5px at 70% 20%,#fff9,transparent),
+ radial-gradient(2px 2px at 40% 80%,#fff6,transparent),radial-gradient(1px 1px at 85% 60%,#fff,transparent),
+ radial-gradient(1.5px 1.5px at 10% 70%,#fff8,transparent),radial-gradient(circle at 80% 0%,#3b2a8a 0,transparent 55%),
+ radial-gradient(circle at 0% 100%,#5b1f7a 0,transparent 50%);background-attachment:fixed;
+ user-select:none;-webkit-user-select:none;padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom)}
+button{font:inherit;cursor:pointer;border:0;touch-action:manipulation}
+#app{max-width:860px;margin:0 auto;padding:16px 16px 40px}
+.top{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.chip{background:#ffffff1f;border-radius:999px;padding:6px 14px;font-weight:700;font-size:18px;display:inline-flex;gap:6px;align-items:center}
+.spacer{flex:1}
+.iconbtn{background:#ffffff1f;color:#fff;border-radius:50%;width:44px;height:44px;font-size:22px}
+h1{font-size:34px;margin:6px 0 0;line-height:1.1}
+h2{font-size:24px;margin:22px 0 10px}
+.hero{display:flex;align-items:center;gap:12px;margin:18px 0 8px}
+.hero .pitir{width:150px;flex:none}
+.bubble{background:#fff;color:var(--ink);border-radius:20px;padding:12px 16px;font-size:20px;font-weight:600;position:relative;line-height:1.25}
+.bubble:before{content:'';position:absolute;left:-10px;top:24px;border:10px solid transparent;border-right-color:#fff;border-left:0}
+.lvl{background:#ffffff14;border-radius:18px;padding:12px 16px;margin-top:8px}
+.lvl .row1{display:flex;justify-content:space-between;font-weight:700}
+.bar{height:14px;background:#ffffff26;border-radius:99px;overflow:hidden;flex:1}
+.bar i{display:block;height:100%;background:linear-gradient(90deg,var(--yellow),#ff9f1c);border-radius:99px;transition:width .4s}
+.planet{display:flex;align-items:center;gap:14px;width:100%;text-align:left;color:#fff;border-radius:22px;padding:16px;margin-bottom:12px;
+ background:linear-gradient(135deg,var(--c),#ffffff10);box-shadow:0 6px 0 #0004}
+.planet .p-ico{font-size:52px}
+.planet b{font-size:22px;display:block}
+.planet small{font-size:16px;opacity:.9}
+.badges{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:10px}
+.badge{background:#ffffff14;border-radius:18px;padding:10px;text-align:center;font-size:14px;line-height:1.2}
+.badge .e{font-size:38px;display:block}
+.badge.off{opacity:.35;filter:grayscale(1)}
+.cats{display:flex;flex-wrap:wrap;gap:8px}
+.cat{background:#ffffff1f;color:#fff;border-radius:999px;padding:8px 14px;font-size:17px;font-weight:600}
+.cat.on{background:var(--yellow);color:var(--ink)}
+.modes{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px}
+.mode{background:#fff;color:var(--ink);border-radius:22px;padding:16px;text-align:left;box-shadow:0 6px 0 #0005;transition:transform .1s}
+.mode:active{transform:translateY(4px);box-shadow:0 2px 0 #0005}
+.mode .e{font-size:40px}
+.mode b{display:block;font-size:21px}
+.mode small{color:var(--muted);font-size:15px;line-height:1.2;display:block}
+.mode.big{grid-column:1/-1;background:linear-gradient(135deg,var(--yellow),#ff9f1c)}
+.mode.big small{color:#5a3b00}
+/* game */
+.ghead{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+.x{background:#ffffff26;color:#fff;width:44px;height:44px;border-radius:50%;font-size:20px}
+.gstars{font-weight:800;font-size:20px;min-width:64px;text-align:right}
+.combo{color:var(--yellow);font-weight:800;text-align:center;height:26px;font-size:19px}
+.panel{background:#fff;color:var(--ink);border-radius:28px;padding:22px;box-shadow:0 8px 0 #0005;text-align:center}
+.plabel{color:var(--muted);font-size:18px;font-weight:600}
+.prompt{font-size:38px;font-weight:800;margin:6px 0 16px;line-height:1.15;display:flex;justify-content:center;align-items:center;gap:10px;flex-wrap:wrap}
+.say{background:#e8efff;border-radius:50%;width:52px;height:52px;font-size:24px;flex:none}
+.opts{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.opt{background:#f1efff;color:var(--ink);border-radius:18px;padding:16px 10px;font-size:21px;font-weight:700;min-height:72px;border:3px solid transparent}
+.opt.ok{background:#dcfce7;border-color:var(--green)}
+.opt.no{background:#fee2e2;border-color:var(--red)}
+.go{background:var(--purple);color:#fff;border-radius:18px;padding:14px 24px;font-size:21px;font-weight:700;box-shadow:0 5px 0 #5b34c9}
+.ghost{background:#f1efff;color:var(--ink);border-radius:18px;padding:14px 20px;font-size:19px;font-weight:700}
+.row{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:16px}
+input.w{width:100%;font:inherit;font-size:30px;font-weight:700;text-align:center;border:3px solid #ddd8ff;border-radius:18px;padding:10px;color:var(--ink);user-select:text;-webkit-user-select:text}
+input.w:focus{outline:none;border-color:var(--purple)}
+.hintline{font-size:28px;letter-spacing:6px;font-weight:800;color:var(--purple);min-height:42px;margin-bottom:8px;word-break:break-word}
+.fb{margin-top:14px;font-size:21px;font-weight:700;min-height:30px}
+.fb.ok{color:var(--green)} .fb.no{color:var(--red)}
+.fb .ans{display:block;color:var(--ink);font-size:28px}
+.buddy{display:flex;align-items:center;gap:10px;margin-top:18px}
+.buddy .pitir{width:90px;flex:none}
+.buddy .bubble{font-size:18px}
+/* card */
+.card{perspective:1200px;height:300px;margin:0 auto;max-width:520px;cursor:pointer}
+.card .in{position:relative;width:100%;height:100%;transition:transform .5s;transform-style:preserve-3d}
+.card.flip .in{transform:rotateY(180deg)}
+.face{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;border-radius:28px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;box-shadow:0 8px 0 #0005}
+.front{background:#fff;color:var(--ink)}
+.back{background:linear-gradient(135deg,var(--blue),var(--purple));color:#fff;transform:rotateY(180deg)}
+.face b{font-size:40px;line-height:1.15;text-align:center}
+.face small{font-size:17px;opacity:.7}
+.face .tap{margin-top:14px;font-size:16px;opacity:.6}
+/* match */
+.match{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.match .col{display:flex;flex-direction:column;gap:10px}
+.tile{background:#fff;color:var(--ink);border-radius:16px;padding:12px 8px;font-size:19px;font-weight:700;min-height:64px;border:3px solid transparent;box-shadow:0 4px 0 #0004;transition:opacity .3s,transform .3s}
+.tile.sel{border-color:var(--yellow);transform:scale(1.04)}
+.tile.done{opacity:0;pointer-events:none;transform:scale(.6)}
+.tile.no{animation:shake .4s}
+@keyframes shake{25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
+/* result */
+.result{text-align:center}
+.result .pitir{width:180px}
+.bigstar{font-size:56px;font-weight:800;color:var(--yellow)}
+.newbadge{background:#fff;color:var(--ink);border-radius:20px;padding:12px;margin:12px auto;max-width:360px;font-weight:700;font-size:19px;animation:pop .5s}
+.newbadge .e{font-size:46px;display:block}
+@keyframes pop{0%{transform:scale(.3)}70%{transform:scale(1.1)}100%{transform:scale(1)}}
+.wlist{background:#fff;color:var(--ink);border-radius:20px;overflow:hidden}
+.wrow{display:flex;justify-content:space-between;gap:10px;padding:10px 14px;border-bottom:1px solid #eee;font-size:18px;align-items:center}
+.wrow b{flex:1}
+.wrow span{color:var(--muted);text-align:right;flex:1}
+.lv{width:62px;text-align:right;font-size:13px;flex:none}
+/* mascot */
+.pitir{display:block;overflow:visible}
+.pitir .m-sad{display:none}
+.pitir.sad .m-happy{display:none}.pitir.sad .m-sad{display:inline}
+.pitir .bod{animation:float 3s ease-in-out infinite;transform-origin:60px 120px}
+.pitir.happy .bod{animation:jump .6s ease-out}
+.pitir.sad .bod{animation:droop .8s ease}
+.pitir .eye{animation:blink 4s infinite;transform-origin:center;transform-box:fill-box}
+.pitir .ant{animation:glow 1.5s ease-in-out infinite alternate}
+@keyframes float{50%{transform:translateY(-6px)}}
+@keyframes jump{30%{transform:translateY(-26px) scale(1.05,.95)}60%{transform:translateY(0) scale(1.08,.92)}}
+@keyframes droop{40%{transform:translateY(6px) rotate(-6deg)}}
+@keyframes blink{0%,92%,100%{transform:scaleY(1)}96%{transform:scaleY(.1)}}
+@keyframes glow{to{fill:#fff3a0}}
+.confetti{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:50}
+.confetti i{position:absolute;top:-20px;width:10px;height:16px;border-radius:3px;animation:fall linear forwards}
+@keyframes fall{to{transform:translateY(110vh) rotate(720deg)}}
+.floatstar{position:fixed;font-size:34px;pointer-events:none;z-index:60;animation:up 1s ease-out forwards}
+@keyframes up{to{transform:translateY(-120px);opacity:0}}
+@media (max-width:520px){h1{font-size:28px}.prompt{font-size:30px}.opts{grid-template-columns:1fr}.hero .pitir{width:110px}.face b{font-size:32px}.tile{font-size:16px}}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script src="words.js"></script>
+<script>
+'use strict';
+const $ = s => document.querySelector(s);
+const app = $('#app');
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const shuffle = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.random() * (i + 1) | 0; [a[i], a[j]] = [a[j], a[i]]; } return a; };
+const rnd = a => a[Math.random() * a.length | 0];
+const dayStr = d => d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate();
+
+/* ---------- kayıt ---------- */
+const KEY = 'pitir-v1';
+function fresh() { return { stars: 0, streak: 0, lastDay: '', words: {}, badges: [], games: 0, bestCombo: 0, mute: false, perfect: 0 }; }
+let S;
+try { S = Object.assign(fresh(), JSON.parse(localStorage.getItem(KEY) || '{}')); } catch (e) { S = fresh(); }
+function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} }
+
+/* ---------- kelimeler ---------- */
+const WORDS = [];
+UNITS.forEach(u => u.cats.forEach((c, ci) => c.words.forEach(([en, tr]) =>
+  WORDS.push({ en, tr, u: u.id, ci, cat: c, key: u.id + '|' + ci + '|' + en }))));
+const box = w => (S.words[w.key] || {}).b || 0;
+const MASTER = 3;
+function grade(w, ok) {
+  const r = S.words[w.key] || { b: 0, c: 0, w: 0 };
+  if (ok) { r.b = Math.min(5, r.b + 1); r.c++; } else { r.b = Math.max(0, r.b - 1); r.w++; }
+  S.words[w.key] = r;
+}
+function unitWords(uid, cats) { return WORDS.filter(w => w.u === uid && (!cats || !cats.length || cats.includes(w.ci))); }
+function pickWords(pool, n) {
+  return pool.map(w => ({ w, s: Math.random() * (6 - box(w)) + (box(w) === 0 ? 1 : 0) }))
+    .sort((a, b) => b.s - a.s).slice(0, n).map(x => x.w);
+}
+function distractors(w, n, field) {
+  const seen = new Set([w[field].toLowerCase()]); const out = [];
+  for (const o of shuffle(WORDS.filter(x => x.u === w.u))) {
+    const k = o[field].toLowerCase();
+    if (!seen.has(k)) { seen.add(k); out.push(o); if (out.length === n) break; }
+  }
+  return out;
+}
+
+/* ---------- seviye + rozet ---------- */
+const LEVELS = [[0,'Uzay Çırağı'],[30,'Yıldız Kaşifi'],[80,'Roket Pilotu'],[150,'Gezegen Kahramanı'],[250,'Kuyruklu Yıldız'],[400,'Galaksi Ustası'],[600,'Evren Efsanesi']];
+function level() {
+  let i = 0; while (i + 1 < LEVELS.length && S.stars >= LEVELS[i + 1][0]) i++;
+  const next = LEVELS[i + 1];
+  return { n: i + 1, name: LEVELS[i][1], pct: next ? (S.stars - LEVELS[i][0]) / (next[0] - LEVELS[i][0]) * 100 : 100, need: next ? next[0] - S.stars : 0 };
+}
+const BADGES = [
+  { id: 'ilk', e: '🚀', n: 'İlk Uçuş', t: 'İlk oyununu bitir', c: () => S.games >= 1 },
+  { id: 'y50', e: '⭐', n: 'Yıldız Toplayıcı', t: '50 yıldız topla', c: () => S.stars >= 50 },
+  { id: 'y200', e: '🌟', n: 'Süpernova', t: '200 yıldız topla', c: () => S.stars >= 200 },
+  { id: 'y500', e: '🌌', n: 'Yıldız Yağmuru', t: '500 yıldız topla', c: () => S.stars >= 500 },
+  { id: 's3', e: '🔥', n: '3 Gün Seri', t: '3 gün üst üste oyna', c: () => S.streak >= 3 },
+  { id: 's7', e: '☄️', n: 'Bir Hafta!', t: '7 gün üst üste oyna', c: () => S.streak >= 7 },
+  { id: 'c10', e: '⚡', n: 'Combo Ustası', t: 'Üst üste 10 doğru', c: () => S.bestCombo >= 10 },
+  { id: 'kusur', e: '💎', n: 'Kusursuz', t: 'Bir oyunu hatasız bitir', c: () => S.perfect >= 1 },
+  { id: 'kat', e: '🏅', n: 'Bölüm Bitti', t: 'Bir bölümün tüm kelimelerini öğren', c: () => UNITS.some(u => u.cats.some((c, ci) => unitWords(u.id, [ci]).every(w => box(w) >= MASTER))) },
+  { id: 'usta', e: '🪐', n: 'Gezegen Ustası', t: 'Bir ünitenin tüm kelimelerini öğren', c: () => UNITS.some(u => unitWords(u.id).every(w => box(w) >= MASTER)) },
+];
+
+/* ---------- ses ---------- */
+let AC;
+function beep(ok) {
+  if (S.mute) return;
+  try {
+    AC = AC || new (window.AudioContext || window.webkitAudioContext)();
+    const t = AC.currentTime;
+    (ok ? [660, 880, 1320] : [320, 220]).forEach((f, i) => {
+      const o = AC.createOscillator(), g = AC.createGain(), s = t + i * .09;
+      o.type = ok ? 'triangle' : 'sine'; o.frequency.value = f;
+      g.gain.setValueAtTime(.0001, s); g.gain.exponentialRampToValueAtTime(.18, s + .02); g.gain.exponentialRampToValueAtTime(.0001, s + .25);
+      o.connect(g); g.connect(AC.destination); o.start(s); o.stop(s + .3);
+    });
+  } catch (e) {}
+}
+let VOICE = null;
+function pickVoice() {
+  if (!window.speechSynthesis) return;
+  const vs = speechSynthesis.getVoices();
+  VOICE = vs.find(v => v.lang === 'en-GB' && /Samantha|Daniel|Kate|Serena/.test(v.name)) || vs.find(v => v.lang === 'en-GB') || vs.find(v => v.lang && v.lang.startsWith('en')) || null;
+}
+if (window.speechSynthesis) { pickVoice(); speechSynthesis.onvoiceschanged = pickVoice; }
+function say(text, slow) {
+  if (!window.speechSynthesis) return;
+  speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(text.split('/')[0].trim());
+  u.lang = 'en-GB'; if (VOICE) u.voice = VOICE; u.rate = slow ? .55 : .85;
+  speechSynthesis.speak(u);
+}
+const speakBtn = (t, slow) => `<button class="say" onclick="event.stopPropagation();say('${esc(t).replace(/&#39;/g, "\\'")}',${slow ? 1 : 0})">${slow ? '🐢' : '🔊'}</button>`;
+
+/* ---------- efektler ---------- */
+function confetti(n) {
+  const b = document.createElement('div'); b.className = 'confetti';
+  for (let i = 0; i < (n || 90); i++) {
+    const s = document.createElement('i');
+    s.style.left = Math.random() * 100 + 'vw'; s.style.background = `hsl(${Math.random() * 360},90%,62%)`;
+    s.style.animationDelay = Math.random() * .7 + 's'; s.style.animationDuration = 1.6 + Math.random() * 1.6 + 's';
+    b.appendChild(s);
+  }
+  document.body.appendChild(b); setTimeout(() => b.remove(), 3800);
+}
+function floatStar(el, txt) {
+  const r = el ? el.getBoundingClientRect() : { left: innerWidth / 2, top: innerHeight / 2, width: 0 };
+  const s = document.createElement('div'); s.className = 'floatstar'; s.textContent = txt || '⭐+1';
+  s.style.left = (r.left + r.width / 2 - 30) + 'px'; s.style.top = r.top + 'px';
+  document.body.appendChild(s); setTimeout(() => s.remove(), 1000);
+}
+
+/* ---------- Pıtır ---------- */
+function pitir(mood) {
+  return `<svg class="pitir ${mood || ''}" viewBox="0 0 120 135" aria-hidden="true"><g class="bod">
+  <path d="M60 36 Q56 22 62 10" stroke="#3a6ee8" stroke-width="5" fill="none" stroke-linecap="round"/>
+  <path class="ant" d="M62 0 l3.5 7 7.5 1 -5.5 5 1.5 7.5 -7 -3.6 -7 3.6 1.5 -7.5 -5.5 -5 7.5 -1z" fill="#ffd23f"/>
+  <path d="M16 74 Q2 66 6 50" stroke="#4f8cff" stroke-width="10" fill="none" stroke-linecap="round"/>
+  <path d="M104 74 Q118 66 114 50" stroke="#4f8cff" stroke-width="10" fill="none" stroke-linecap="round"/>
+  <ellipse cx="40" cy="122" rx="14" ry="7" fill="#2f5fd0"/><ellipse cx="80" cy="122" rx="14" ry="7" fill="#2f5fd0"/>
+  <ellipse cx="60" cy="78" rx="48" ry="44" fill="#4f8cff"/>
+  <ellipse cx="60" cy="94" rx="28" ry="21" fill="#9cc0ff"/>
+  <circle cx="22" cy="58" r="4" fill="#7aa8ff"/><circle cx="96" cy="50" r="3" fill="#7aa8ff"/><circle cx="88" cy="40" r="2" fill="#7aa8ff"/>
+  <circle cx="42" cy="68" r="14" fill="#fff"/><circle cx="78" cy="68" r="14" fill="#fff"/>
+  <circle class="eye" cx="44" cy="70" r="8" fill="#1b1440"/><circle class="eye" cx="80" cy="70" r="8" fill="#1b1440"/>
+  <circle cx="47" cy="66" r="3" fill="#fff"/><circle cx="83" cy="66" r="3" fill="#fff"/>
+  <ellipse cx="28" cy="86" rx="7" ry="4" fill="#ff8fb8"/><ellipse cx="92" cy="86" rx="7" ry="4" fill="#ff8fb8"/>
+  <path class="m-happy" d="M49 88 Q60 101 71 88 Z" fill="#ff6b8b" stroke="#1b1440" stroke-width="3.5" stroke-linejoin="round"/>
+  <path class="m-sad" d="M51 96 Q60 88 69 96" stroke="#1b1440" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+  </g></svg>`;
+}
+const CHEER = ['Süpersin! 🎉', 'Harikasın!', 'Yıldız gibi parladın! ⭐', 'Pıtır çok mutlu! 💙', 'Aynen böyle devam!', 'Vay canına, çok iyi!', 'Beynin roket gibi! 🚀'];
+const COMFORT = ['Olsun, birlikte öğreniyoruz 💙', 'Bir dahakine kesin bilirsin!', 'Pıtır sana inanıyor!', 'Hata yapmak öğrenmenin parçası 🌱', 'Bu kelimeyi tekrar soracağım, hazır ol 😉'];
+function setBuddy(mood, msg) {
+  const b = $('#buddy'); if (!b) return;
+  b.innerHTML = pitir(mood) + `<div class="bubble">${msg}</div>`;
+}
+
+/* ---------- ekranlar ---------- */
+let CUR = { uid: null, cats: [] };
+let G = null;
+
+function home() {
+  G = null;
+  const L = level();
+  const hi = S.games === 0 ? 'Merhaba! Ben Pıtır 👋 Uzaydan İngilizce öğrenmeye geldim. Birlikte kelime avına çıkalım mı?'
+    : rnd(['Tekrar hoş geldin! Bugün hangi gezegene uçuyoruz? 🚀', 'Seni özledim! Hadi yıldız toplayalım ⭐', 'Bugün de kelime avına hazır mısın? 💙']);
+  app.innerHTML = `
+  <div class="top"><span class="chip">⭐ ${S.stars}</span><span class="chip">🔥 ${S.streak} gün</span><span class="spacer"></span>
+   <button class="iconbtn" onclick="S.mute=!S.mute;save();home()">${S.mute ? '🔇' : '🔊'}</button></div>
+  <div class="hero">${pitir('')}<div class="bubble">${hi}</div></div>
+  <div class="lvl"><div class="row1"><span>Seviye ${L.n} · ${L.name}</span><span>${L.need ? L.need + ' ⭐ kaldı' : 'En üst seviye!'}</span></div>
+   <div class="bar" style="margin-top:6px"><i style="width:${L.pct}%"></i></div></div>
+  <h2>🪐 Gezegenler</h2>
+  ${UNITS.map(u => { const ws = unitWords(u.id), m = ws.filter(w => box(w) >= MASTER).length;
+    return `<button class="planet" style="--c:${u.color}" onclick="unitView('${u.id}')"><span class="p-ico">${u.planet}</span>
+     <span style="flex:1"><b>${esc(u.title)}</b><small>${m} / ${ws.length} kelime öğrenildi</small>
+     <div class="bar" style="margin-top:6px"><i style="width:${m / ws.length * 100}%"></i></div></span></button>`; }).join('')}
+  <h2>🏆 Rozetlerim</h2>
+  <div class="badges">${BADGES.map(b => `<div class="badge ${S.badges.includes(b.id) ? '' : 'off'}"><span class="e">${b.e}</span><b>${b.n}</b><br>${b.t}</div>`).join('')}</div>`;
+  scrollTo(0, 0);
+}
+
+function unitView(uid) {
+  G = null; if (CUR.uid !== uid) CUR = { uid, cats: [] };
+  const u = UNITS.find(x => x.id === uid), ws = unitWords(uid, CUR.cats), m = ws.filter(w => box(w) >= MASTER).length;
+  app.innerHTML = `
+  <div class="top"><button class="iconbtn" onclick="home()">←</button><span class="spacer"></span><span class="chip">⭐ ${S.stars}</span></div>
+  <h1>${u.planet} ${esc(u.title)}</h1>
+  <div class="lvl"><div class="row1"><span>Öğrenilen</span><span>${m} / ${ws.length}</span></div><div class="bar" style="margin-top:6px"><i style="width:${m / ws.length * 100}%"></i></div></div>
+  <h2>Hangi bölüm?</h2>
+  <div class="cats"><button class="cat ${CUR.cats.length ? '' : 'on'}" onclick="CUR.cats=[];unitView('${uid}')">Hepsi</button>
+   ${u.cats.map((c, i) => { const cw = unitWords(uid, [i]), cm = cw.filter(w => box(w) >= MASTER).length;
+     return `<button class="cat ${CUR.cats.includes(i) ? 'on' : ''}" onclick="toggleCat(${i})">${c.emoji} ${esc(c.tr)} ${cm === cw.length ? '✅' : `<small>${cm}/${cw.length}</small>`}</button>`; }).join('')}</div>
+  <h2>Oyun seç</h2>
+  <div class="modes">
+   <button class="mode big" onclick="start('mix')"><span class="e">🚀</span><b>Uzay Görevi</b><small>Karışık 10 soru: seç, yaz, dinle. En çok yıldız burada!</small></button>
+   <button class="mode" onclick="start('card')"><span class="e">🃏</span><b>Kartlar</b><small>Çevir, bak, öğren</small></button>
+   <button class="mode" onclick="start('match')"><span class="e">🔗</span><b>Eşleştir</b><small>Çiftleri bul</small></button>
+   <button class="mode" onclick="start('choice')"><span class="e">✅</span><b>Seç</b><small>Doğru anlamı bul</small></button>
+   <button class="mode" onclick="start('write')"><span class="e">✍️</span><b>Yaz</b><small>İngilizcesini yaz</small></button>
+   <button class="mode" onclick="start('listen')"><span class="e">🎧</span><b>Dinle</b><small>Duyduğunu bul</small></button>
+   <button class="mode" onclick="wordList()"><span class="e">📖</span><b>Kelime Listesi</b><small>Hepsine göz at</small></button>
+  </div>`;
+  scrollTo(0, 0);
+}
+function toggleCat(i) { const k = CUR.cats.indexOf(i); k < 0 ? CUR.cats.push(i) : CUR.cats.splice(k, 1); unitView(CUR.uid); }
+
+function wordList() {
+  const ws = unitWords(CUR.uid, CUR.cats);
+  app.innerHTML = `<div class="top"><button class="iconbtn" onclick="unitView(CUR.uid)">←</button><span class="spacer"></span></div>
+  <h1>📖 Kelime Listesi</h1><p style="opacity:.8">Bir kelimeye dokun, Pıtır okusun. Yıldızlar ne kadar iyi bildiğini gösterir.</p>
+  <div class="wlist">${ws.map(w => `<div class="wrow" onclick="say('${esc(w.en).replace(/&#39;/g, "\\'")}')"><b>${esc(w.en)}</b><span>${esc(w.tr)}</span><span class="lv">${'★'.repeat(Math.min(box(w), MASTER))}${'☆'.repeat(Math.max(0, MASTER - box(w)))}</span></div>`).join('')}</div>`;
+  scrollTo(0, 0);
+}
+
+/* ---------- oyun ---------- */
+function start(mode) {
+  const pool = unitWords(CUR.uid, CUR.cats);
+  G = { mode, i: 0, earned: 0, combo: 0, wrong: 0, right: 0 };
+  if (mode === 'match') {
+    const used = new Set(), list = [];
+    for (const w of pickWords(pool, pool.length)) { const a = w.en.toLowerCase(), b = w.tr.toLowerCase(); if (used.has(a) || used.has(b)) continue; used.add(a); used.add(b); list.push(w); if (list.length === 6) break; }
+    G.pairs = list; G.left = shuffle(list.map((w, i) => i)); G.right = shuffle(list.map((w, i) => i)); G.sel = null; G.done = 0;
+    return renderMatch();
+  }
+  const ws = pickWords(pool, 10);
+  const types = mode === 'mix' ? ['choice', 'write', 'listen'] : [mode];
+  G.q = ws.map(w => ({ w, type: rnd(types) }));
+  mode === 'card' ? renderCard() : renderQ();
+}
+function quit() { if (G && G.i > 0 && !confirm('Oyundan çıkılsın mı? Topladığın yıldızlar kaydedilecek.')) return; if (G && G.earned) finish(true); else unitView(CUR.uid); }
+function head(pct) {
+  return `<div class="ghead"><button class="x" onclick="quit()">✕</button><div class="bar"><i style="width:${pct}%"></i></div><div class="gstars">⭐ ${G.earned}</div></div>
+  <div class="combo" id="combo">${G.combo >= 3 ? '⚡ ' + G.combo + ' combo!' : ''}</div>`;
+}
+const buddyHtml = msg => `<div class="buddy" id="buddy">${pitir('')}<div class="bubble">${msg}</div></div>`;
+
+function answer(w, ok, el, msg) {
+  grade(w, ok);
+  if (ok) {
+    G.right++; G.combo++; S.bestCombo = Math.max(S.bestCombo, G.combo);
+    const add = G.combo >= 5 ? 3 : G.combo >= 3 ? 2 : 1; G.earned += add;
+    beep(true); floatStar(el, '⭐+' + add);
+    setBuddy('happy', msg || rnd(CHEER));
+  } else {
+    G.wrong++; G.combo = 0; beep(false);
+    setBuddy('sad', msg || rnd(COMFORT));
+  }
+  const c = $('#combo'); if (c) c.textContent = G.combo >= 3 ? '⚡ ' + G.combo + ' combo!' : '';
+  const s = document.querySelector('.gstars'); if (s) s.textContent = '⭐ ' + G.earned;
+  save();
+}
+function next() { G.i++; G.mode === 'card' ? renderCard() : renderQ(); }
+
+function renderQ() {
+  if (G.i >= G.q.length) return finish();
+  const { w, type } = G.q[G.i]; G.locked = false;
+  let body = '';
+  if (type === 'choice') {
+    G.rev = Math.random() < .4;
+    G.opts = shuffle([w, ...distractors(w, 3, G.rev ? 'en' : 'tr')]);
+    body = `<div class="plabel">${G.rev ? 'İngilizcesi hangisi?' : 'Türkçesi ne?'}</div>
+     <div class="prompt">${esc(G.rev ? w.tr : w.en)} ${G.rev ? '' : speakBtn(w.en)}</div>
+     <div class="opts">${G.opts.map((o, k) => `<button class="opt" onclick="pick(${k},this)">${esc(G.rev ? o.en : o.tr)}</button>`).join('')}</div>`;
+  } else if (type === 'listen') {
+    G.rev = true;
+    G.opts = shuffle([w, ...distractors(w, 3, 'en')]);
+    body = `<div class="plabel">Dinle ve doğru kelimeyi bul 🎧</div>
+     <div class="prompt">${speakBtn(w.en)} ${speakBtn(w.en, 1)}</div>
+     <div class="opts">${G.opts.map((o, k) => `<button class="opt" onclick="pick(${k},this)">${esc(o.en)}</button>`).join('')}</div>`;
+    setTimeout(() => say(w.en), 350);
+  } else {
+    G.h = 0;
+    body = `<div class="plabel">İngilizcesini yaz ✍️</div><div class="prompt">${esc(w.tr)}</div>
+     <div class="hintline" id="hint">${pattern(w, 0)}</div>
+     <form onsubmit="checkWrite(event)"><input class="w" id="inp" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="buraya yaz...">
+     <div class="row"><button type="button" class="ghost" onclick="hint()">💡 İpucu</button><button class="go">Kontrol et</button></div></form>`;
+  }
+  app.innerHTML = head(G.i / G.q.length * 100) + `<div class="panel">${body}<div class="fb" id="fb"></div></div>` +
+    buddyHtml(G.i === 0 ? 'Hadi başlayalım! Sen yaparsın 💪' : rnd(['Sıradaki geliyor!', 'Bunu biliyorsun bence 😉', 'Odaklan, başarabilirsin!', 'Pıtır seninle 💙']));
+  const inp = $('#inp'); if (inp) setTimeout(() => inp.focus(), 50);
+}
+function pick(k, btn) {
+  if (G.locked) return; G.locked = true;
+  const { w } = G.q[G.i], ok = G.opts[k] === w;
+  btn.classList.add(ok ? 'ok' : 'no');
+  if (!ok) document.querySelectorAll('.opt')[G.opts.indexOf(w)].classList.add('ok');
+  answer(w, ok, btn);
+  if (G.rev || ok) say(w.en);
+  if (ok) setTimeout(next, 1100);
+  else $('#fb').innerHTML = `<div class="row"><button class="go" onclick="next()">Devam →</button></div>`;
+}
+function primary(w) { return w.en.split('/')[0].trim(); }
+function pattern(w, h) {
+  let n = 0;
+  return [...primary(w)].map(ch => /[a-z]/i.test(ch) ? (n++ < h ? ch : '_') : (ch === ' ' ? '&nbsp;&nbsp;' : esc(ch))).join(' ');
+}
+function hint() {
+  if (G.locked) return;
+  const w = G.q[G.i].w, L = primary(w).replace(/[^a-z]/gi, '').length;
+  if (G.h < L - 1) G.h++;
+  G.hinted = true; $('#hint').innerHTML = pattern(w, G.h); $('#inp').focus();
+}
+const norm = s => s.toLowerCase().replace(/[^a-z]+/g, ' ').trim();
+function lev(a, b) {
+  const d = Array.from({ length: a.length + 1 }, (_, i) => [i]);
+  for (let j = 1; j <= b.length; j++) d[0][j] = j;
+  for (let i = 1; i <= a.length; i++) for (let j = 1; j <= b.length; j++)
+    d[i][j] = Math.min(d[i - 1][j] + 1, d[i][j - 1] + 1, d[i - 1][j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
+  return d[a.length][b.length];
+}
+function checkWrite(e) {
+  e.preventDefault(); if (G.locked) return;
+  const w = G.q[G.i].w, v = norm($('#inp').value);
+  if (!v) return;
+  G.locked = true;
+  const answers = w.en.split('/').map(norm);
+  const exact = answers.includes(v), near = !exact && answers.some(a => a.length > 4 && lev(a, v) === 1);
+  const ok = exact || near, fb = $('#fb');
+  $('#inp').blur();
+  say(w.en);
+  if (ok) {
+    fb.className = 'fb ok';
+    fb.innerHTML = near ? `Az kalsın! Doğrusu:<span class="ans">${esc(w.en)}</span>` : `Doğru! 🎉<span class="ans">${esc(w.en)}</span>`;
+    answer(w, true, $('#inp'), near ? 'Küçük bir harf kaçtı ama saydım 😉' : null);
+    setTimeout(next, near ? 2000 : 1300);
+  } else {
+    fb.className = 'fb no';
+    fb.innerHTML = `Doğrusu:<span class="ans">${esc(w.en)}</span><div class="row"><button class="go" onclick="next()">Devam →</button></div>`;
+    answer(w, false, $('#inp'));
+  }
+}
+
+function renderCard() {
+  if (G.i >= G.q.length) return finish();
+  const { w } = G.q[G.i]; G.locked = false;
+  app.innerHTML = head(G.i / G.q.length * 100) + `
+  <div class="card" id="card" onclick="flipCard()"><div class="in">
+   <div class="face front"><small>${w.cat.emoji} ${esc(w.cat.tr)}</small><b>${esc(w.en)}</b><div class="row" style="margin-top:10px">${speakBtn(w.en)}${speakBtn(w.en, 1)}</div><div class="tap">Çevirmek için dokun 👆</div></div>
+   <div class="face back"><small>Türkçesi</small><b>${esc(w.tr)}</b></div></div></div>
+  <div class="row"><button class="ghost" onclick="cardAns(false)">↺ Tekrar çalışayım</button><button class="go" onclick="cardAns(true)">✓ Biliyorum</button></div>` +
+  buddyHtml(G.i === 0 ? 'Önce kendin tahmin et, sonra kartı çevir!' : rnd(['Bu kelimeyi biliyor musun?', 'Sesli tekrar et, daha iyi akılda kalır 🗣️', 'Çevir bakalım!']));
+  setTimeout(() => say(w.en), 300);
+}
+function flipCard() { $('#card').classList.toggle('flip'); }
+function cardAns(ok) {
+  if (G.locked) return; G.locked = true;
+  const w = G.q[G.i].w;
+  if (ok) answer(w, true, document.querySelector('.go'));
+  else { grade(w, false); G.combo = 0; save(); }
+  setTimeout(next, ok ? 500 : 0);
+}
+
+function renderMatch() {
+  const P = G.pairs;
+  app.innerHTML = head(G.done / P.length * 100) + `<div class="plabel" style="color:#fff;text-align:center;margin-bottom:10px">İngilizceyi Türkçesiyle eşleştir 🔗</div>
+  <div class="match"><div class="col">${G.left.map(i => `<button class="tile" id="L${i}" onclick="mt('L',${i})">${esc(P[i].en)}</button>`).join('')}</div>
+  <div class="col">${G.right.map(i => `<button class="tile" id="R${i}" onclick="mt('R',${i})">${esc(P[i].tr)}</button>`).join('')}</div></div>` +
+  buddyHtml('Bir İngilizce, bir Türkçe kutuya dokun!');
+}
+function mt(side, i) {
+  const el = $('#' + side + i);
+  if (side === 'L') say(G.pairs[i].en);
+  if (!G.sel || G.sel.side === side) {
+    if (G.sel) $('#' + G.sel.side + G.sel.i).classList.remove('sel');
+    G.sel = { side, i }; el.classList.add('sel'); return;
+  }
+  const other = $('#' + G.sel.side + G.sel.i), li = side === 'L' ? i : G.sel.i;
+  other.classList.remove('sel');
+  if (G.sel.i === i) {
+    el.classList.add('done'); other.classList.add('done'); G.done++;
+    answer(G.pairs[i], true, el);
+    document.querySelector('.ghead .bar i').style.width = G.done / G.pairs.length * 100 + '%';
+    if (G.done === G.pairs.length) setTimeout(finish, 800);
+  } else {
+    [el, other].forEach(x => { x.classList.remove('no'); void x.offsetWidth; x.classList.add('no'); });
+    answer(G.pairs[li], false, el);
+  }
+  G.sel = null;
+}
+
+function finish(early) {
+  const g = G; G = null;
+  S.stars += g.earned; S.games++;
+  const t = new Date(), y = new Date(Date.now() - 864e5);
+  if (S.lastDay !== dayStr(t)) { S.streak = S.lastDay === dayStr(y) ? S.streak + 1 : 1; S.lastDay = dayStr(t); }
+  const perfect = !early && g.wrong === 0 && g.right >= 6;
+  if (perfect) S.perfect++;
+  const fresh = BADGES.filter(b => !S.badges.includes(b.id) && b.c());
+  fresh.forEach(b => S.badges.push(b.id));
+  save();
+  const total = g.right + g.wrong, rate = total ? g.right / total : 0;
+  const msg = perfect ? 'KUSURSUZ! Hiç hata yapmadın, Pıtır havalara uçtu! 💎' : rate >= .8 ? 'Muhteşem bir görevdi! Seninle gurur duyuyorum 🌟'
+    : rate >= .5 ? 'Çok iyi gidiyorsun! Biraz daha tekrar, sonra usta olacaksın 💪' : 'Her oyunda biraz daha öğreniyorsun. Hadi bir tur daha! 💙';
+  app.innerHTML = `<div class="result"><div style="display:flex;justify-content:center">${pitir('happy')}</div>
+   <div class="bubble" style="display:inline-block;margin:6px 0 14px">${msg}</div>
+   <div class="bigstar">⭐ +${g.earned}</div>
+   <div style="font-size:20px;opacity:.9">${g.right} doğru · ${g.wrong} yanlış</div>
+   ${fresh.map(b => `<div class="newbadge">Yeni rozet kazandın!<span class="e">${b.e}</span>${b.n}</div>`).join('')}
+   <div class="row"><button class="ghost" onclick="unitView(CUR.uid)">Başka oyun</button><button class="go" onclick="start('${g.mode}')">Bir tur daha 🚀</button></div>
+   <div class="row"><button class="ghost" onclick="home()">🏠 Ana sayfa</button></div></div>`;
+  if (!early) { confetti(perfect || fresh.length ? 140 : 80); beep(true); }
+  scrollTo(0, 0);
+}
+
+home();
+if ('serviceWorker' in navigator && location.protocol.startsWith('http')) navigator.serviceWorker.register('sw.js').catch(() => {});
+</script>
+</body>
+</html>
